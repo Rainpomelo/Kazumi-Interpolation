@@ -1,18 +1,10 @@
 buildscript {
     repositories {
-        maven { url 'https://mirrors.tencent.com/nexus/repository/maven-public/' }
         maven { url 'https://maven.aliyun.com/repository/google' }
         maven { url 'https://maven.aliyun.com/repository/public' }
         maven { url 'https://maven.aliyun.com/repository/gradle-plugin' }
-    }
-}
-
-allprojects {
-    repositories {
-        maven { url 'https://mirrors.tencent.com/nexus/repository/maven-public/' }
-        maven { url 'https://maven.aliyun.com/repository/google' }
-        maven { url 'https://maven.aliyun.com/repository/public' }
-        maven { url 'https://maven.aliyun.com/repository/gradle-plugin' }
+        google()
+        mavenCentral()
     }
 }
 
