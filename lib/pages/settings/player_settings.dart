@@ -330,6 +330,12 @@ class _PlayerSettingsPageState extends State<PlayerSettingsPage> {
                   },
                   title: Text('超分辨率', style: TextStyle(fontFamily: fontFamily)),
                 ),
+                SettingsTile.navigation(
+                  onPressed: (_) async {
+                    context.pushNamed('/settings/player/interpolation');
+                  },
+                  title: Text('⚡ 实时运动插帧 (Vulkan 补帧)', style: TextStyle(fontFamily: fontFamily)),
+                ),
               ],
             ),
             SettingsSection(

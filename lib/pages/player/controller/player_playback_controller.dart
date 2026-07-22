@@ -7,6 +7,7 @@ import 'package:flutter_volume_controller/flutter_volume_controller.dart';
 import 'package:kazumi/bean/dialog/dialog_helper.dart';
 import 'package:kazumi/pages/player/controller/player_debug_controller.dart';
 import 'package:kazumi/pages/player/controller/player_super_resolution.dart';
+import 'package:kazumi/pages/player/controller/player_frame_interpolation.dart';
 import 'package:kazumi/services/shaders/shader_asset_service.dart';
 import 'package:kazumi/utils/constants.dart';
 import 'package:kazumi/services/logging/logger.dart';
@@ -84,6 +85,10 @@ abstract class _PlayerPlaybackController with Store {
   /// 当前超分辨率模式
   @observable
   SuperResolutionMode superResolutionMode = SuperResolutionMode.off;
+
+  /// 当前运动插帧模式
+  @observable
+  FrameInterpolationMode frameInterpolationMode = FrameInterpolationMode.off;
 
   @observable
   double volume = -1;
@@ -232,6 +237,9 @@ abstract class _PlayerPlaybackController with Store {
     startOffset = offset;
     superResolutionMode = SuperResolutionMode.fromStorageValue(
       GStorage.getSetting(SettingsKeys.defaultSuperResolutionMode),
+    );
+    frameInterpolationMode = FrameInterpolationMode.fromStorageValue(
+      GStorage.getSetting(SettingsKeys.defaultFrameInterpolationMode),
     );
     hAenable = GStorage.getSetting(SettingsKeys.hAenable);
     androidEnableOpenSLES =
@@ -400,6 +408,13 @@ abstract class _PlayerPlaybackController with Store {
         }
       }
 
+      if (frameInterpolationMode != FrameInterpolationMode.off) {
+        await setFrameInterpolation(frameInterpolationMode, player: player);
+        if (!isCurrentPlayer(player)) {
+          return await _discardIfNotCurrent(candidate);
+        }
+      }
+
       await player.open(
         Media(videoUrl(),
             start: Duration(seconds: offset), httpHeaders: httpHeaders),
@@ -420,7 +435,40 @@ abstract class _PlayerPlaybackController with Store {
     }
   }
 
-  Future<void> setShader(SuperResolutionMode mode, {Player? player}) async {
+  Future<void> setFrameInterpolation(FrameInterpolationMode mode, {Player? player}) async {
+    final currentPlayer = player ?? mediaPlayer;
+    if (currentPlayer == null) return;
+    try {
+      var pp = currentPlayer.platform as NativePlayer;
+      await pp.waitForPlayerInitialization;
+      await pp.waitForVideoControllerInitializationIfAttached;
+      if (!identical(mediaPlayer, currentPlayer)) {
+        return;
+      }
+      switch (mode) {
+        case FrameInterpolationMode.off:
+          await pp.setProperty("interpolation", "no");
+          await pp.setProperty("video-sync", "audio");
+          break;
+        case FrameInterpolationMode.smooth:
+          await pp.setProperty("video-sync", "display-resync");
+          await pp.setProperty("interpolation", "yes");
+          await pp.setProperty("tscale", "oversample");
+          await pp.setProperty("override-display-fps", "60");
+          break;
+        case FrameInterpolationMode.quality:
+          await pp.setProperty("video-sync", "display-resync");
+          await pp.setProperty("interpolation", "yes");
+          await pp.setProperty("tscale", "bicubic");
+          await pp.setProperty("override-display-fps", "120");
+          break;
+      }
+      frameInterpolationMode = mode;
+      KazumiLogger().i('Player: 成功设置运动插帧模式 -> ${mode.label}');
+    } catch (e, stack) {
+      KazumiLogger().e('Player: 设置运动插帧模式失败', error: e, stackTrace: stack);
+    }
+  }
     final currentPlayer = player ?? mediaPlayer;
     if (currentPlayer == null) return;
     try {

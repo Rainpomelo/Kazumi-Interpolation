@@ -351,6 +351,11 @@ class SettingsKeys {
     1,
     group: SettingGroup.player,
   );
+  static const defaultFrameInterpolationMode = SettingKey<int>(
+    _SettingBoxKey.defaultFrameInterpolationMode,
+    1,
+    group: SettingGroup.player,
+  );
   static const disableSuperResolutionWarning = SettingKey<bool>(
     _SettingBoxKey.disableSuperResolutionWarning,
     false,
@@ -689,6 +694,7 @@ class _SettingBoxKey {
       androidVideoRenderer = 'androidVideoRenderer',
       androidAutoEnterPIP = 'androidAutoEnterPIP',
       defaultSuperResolutionMode = 'defaultSuperResolutionType',
+      defaultFrameInterpolationMode = 'defaultFrameInterpolationMode',
       disableSuperResolutionWarning = 'superResolutionWarn',
       playerDisableAnimations = 'playerDisableAnimations',
       playerLogLevel = 'playerLogLevel',

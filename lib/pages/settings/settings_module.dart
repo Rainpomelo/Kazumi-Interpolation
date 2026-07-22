@@ -14,6 +14,7 @@ import 'package:kazumi/pages/settings/player_settings.dart';
 import 'package:kazumi/pages/settings/proxy/proxy_module.dart';
 import 'package:kazumi/pages/settings/renderer_settings.dart';
 import 'package:kazumi/pages/settings/super_resolution_settings.dart';
+import 'package:kazumi/pages/settings/frame_interpolation_settings.dart';
 import 'package:kazumi/pages/settings/theme_settings_page.dart';
 import 'package:kazumi/pages/webdav_editor/webdav_module.dart';
 
@@ -47,6 +48,10 @@ final settingsModule = createModule(
       ..route(
         '/player/super',
         child: (context, state) => const SuperResolutionSettings(),
+      )
+      ..route(
+        '/player/interpolation',
+        child: (context, state) => const FrameInterpolationSettings(),
       )
       ..module(webDavModule)
       ..module(aboutModule)
