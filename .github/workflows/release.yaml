@@ -8,33 +8,55 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-android:
-    runs-on: ubuntu-latest
+  flutter-build-android:
+    name: "Release for android (Vulkan Frame Interpolation)"
+    runs-on: "ubuntu-latest" 
+    permissions: write-all
     steps:
-      - name: Checkout repository
+      - name: Clone repository
         uses: actions/checkout@v4
 
-      - name: Set up Java 17
+      - name: Extract tag name
+        run: echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+        shell: bash
+
+      - name: Echo build progress
+        run: echo "Kazumi_android_vulkan_interpolation.apk build progress"
+        shell: bash
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang cmake libgtk-3-dev ninja-build libayatana-appindicator3-dev libasound2-dev
+        shell: bash
+
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
           java-version: '17'
+          distribution: 'temurin'          
 
       - name: Set up Flutter
-        uses: subosito/flutter-action@v2
+        uses: subosito/flutter-action@v2.16.0
+        id: flutter-action
         with:
-          channel: 'stable'
+          channel: stable
+          flutter-version-file: pubspec.yaml
 
-      - name: Disable analytics & Get dependencies
-        run: |
-          flutter config --no-analytics
-          flutter pub get
+      - name: Get Flutter dependencies
+        run: flutter pub get
+        shell: bash
 
-      - name: Build Android APK
-        run: flutter build apk --debug --no-tree-shake-icons
+      - name: Remove build id
+        run: sed -i -e 's/-Wl,/-Wl,--build-id=none,/' ${{ steps.flutter-action.outputs.PUB-CACHE-PATH }}/hosted/pub.dev/jni-*/src/CMakeLists.txt || true
+        shell: bash
 
-      - name: Upload APK
+      - name: Build Flutter for Android
+        run: flutter build apk --split-per-abi --no-tree-shake-icons
+        shell: bash
+
+      - name: Upload android outputs
         uses: actions/upload-artifact@v4
         with:
           name: Kazumi-Vulkan-Interpolation-APK
-          path: build/app/outputs/flutter-apk/app-debug.apk
+          path: build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
