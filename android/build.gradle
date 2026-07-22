@@ -26,20 +26,15 @@ subprojects {
     project.evaluationDependsOn(':app')
 }
 
-// 兼容判断 project.state.executed，防止 Cannot run Project.afterEvaluate 报错
-subprojects { project ->
-    def configureAndroid = {
-        if (project.extensions.findByName("android") != null) {
-            project.android {
+// 使用 plugins.whenPluginAdded 在 AGP 加载的第一时间锁定 compileSdk 36，避开 It is too late 异常
+subprojects { p ->
+    p.plugins.whenPluginAdded { plugin ->
+        if (plugin.class.name.startsWith("com.android.build.gradle")) {
+            p.android {
                 compileSdkVersion 36
                 buildToolsVersion "35.0.0"
             }
         }
-    }
-    if (project.state.executed) {
-        configureAndroid()
-    } else {
-        project.afterEvaluate configureAndroid
     }
 }
 
