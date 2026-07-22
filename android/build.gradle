@@ -26,15 +26,20 @@ subprojects {
     project.evaluationDependsOn(':app')
 }
 
-// 强制统一所有第三方插件的 compileSdkVersion 为本地已有的 36，禁止自动向 Google 下载 android-33/34/35 平台包
-subprojects {
-    afterEvaluate { project ->
+// 兼容判断 project.state.executed，防止 Cannot run Project.afterEvaluate 报错
+subprojects { project ->
+    def configureAndroid = {
         if (project.extensions.findByName("android") != null) {
             project.android {
                 compileSdkVersion 36
                 buildToolsVersion "35.0.0"
             }
         }
+    }
+    if (project.state.executed) {
+        configureAndroid()
+    } else {
+        project.afterEvaluate configureAndroid
     }
 }
 
