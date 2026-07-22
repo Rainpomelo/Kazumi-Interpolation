@@ -26,14 +26,18 @@ subprojects {
     project.evaluationDependsOn(':app')
 }
 
-// 使用 plugins.whenPluginAdded 在 AGP 加载的第一时间锁定 compileSdk 36，避开 It is too late 异常
+// 精确捕获 com.android.application 和 com.android.library 插件，安全重写 compileSdkVersion 为 36
 subprojects { p ->
-    p.plugins.whenPluginAdded { plugin ->
-        if (plugin.class.name.startsWith("com.android.build.gradle")) {
-            p.android {
-                compileSdkVersion 36
-                buildToolsVersion "35.0.0"
-            }
+    p.plugins.withId("com.android.application") {
+        p.android {
+            compileSdkVersion 36
+            buildToolsVersion "35.0.0"
+        }
+    }
+    p.plugins.withId("com.android.library") {
+        p.android {
+            compileSdkVersion 36
+            buildToolsVersion "35.0.0"
         }
     }
 }
