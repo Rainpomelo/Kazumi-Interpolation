@@ -26,22 +26,6 @@ subprojects {
     project.evaluationDependsOn(':app')
 }
 
-// 精确捕获 com.android.application 和 com.android.library 插件，安全重写 compileSdkVersion 为 36
-subprojects { p ->
-    p.plugins.withId("com.android.application") {
-        p.android {
-            compileSdkVersion 36
-            buildToolsVersion "35.0.0"
-        }
-    }
-    p.plugins.withId("com.android.library") {
-        p.android {
-            compileSdkVersion 36
-            buildToolsVersion "35.0.0"
-        }
-    }
-}
-
 tasks.register("clean", Delete) {
     delete rootProject.buildDir
 }
