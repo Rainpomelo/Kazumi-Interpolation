@@ -26,6 +26,18 @@ subprojects {
     project.evaluationDependsOn(':app')
 }
 
+// 强制统一所有第三方插件的 compileSdkVersion 为本地已有的 36，禁止自动向 Google 下载 android-33/34/35 平台包
+subprojects {
+    afterEvaluate { project ->
+        if (project.extensions.findByName("android") != null) {
+            project.android {
+                compileSdkVersion 36
+                buildToolsVersion "35.0.0"
+            }
+        }
+    }
+}
+
 tasks.register("clean", Delete) {
     delete rootProject.buildDir
 }
